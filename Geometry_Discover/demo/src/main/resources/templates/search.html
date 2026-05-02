@@ -111,10 +111,7 @@
             {name: 'Cant Let Go', creator: 'RobTop', difficulty: 'Peak Hard', image: 'Cant Let Go.jpg'}
         ];
 
-        const RATING_STORAGE_KEY = 'gd-level-ratings-v1';
-        const PLAYER_RATING_STORAGE_KEY = 'gd-player-ratings-v1';
-        const LEVEL_COMMENTS_STORAGE_KEY = 'gd-level-comments-v1';
-        const PLAYER_COMMENT_STORAGE_KEY = 'gd-player-comments-v1';
+        const PLAYER_ID_STORAGE_KEY = 'gd-player-id-v1';
 
         const canonicalDifficulties = [
             'Auto', 'Easy', 'Normal', 'Hard', 'Harder', 'Insane',
@@ -129,146 +126,88 @@
                 .replace(/(^-|-$)/g, '');
         }
 
-        function loadRatingStats() {
-            try {
-                const raw = localStorage.getItem(RATING_STORAGE_KEY);
-                if (!raw) return {};
-                const parsed = JSON.parse(raw);
-                return (parsed && typeof parsed === 'object') ? parsed : {};
-            } catch (err) {
-                return {};
-            }
+        function getOrCreatePlayerId() {
+            const existing = localStorage.getItem(PLAYER_ID_STORAGE_KEY);
+            if (existing) return existing;
+            const created = `player-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+            localStorage.setItem(PLAYER_ID_STORAGE_KEY, created);
+            return created;
         }
 
-        function saveRatingStats(stats) {
-            localStorage.setItem(RATING_STORAGE_KEY, JSON.stringify(stats));
-        }
+        const playerId = getOrCreatePlayerId();
+        let feedbackByLevel = {};
 
-        function loadPlayerRatings() {
-            try {
-                const raw = localStorage.getItem(PLAYER_RATING_STORAGE_KEY);
-                if (!raw) return {};
-                const parsed = JSON.parse(raw);
-                return (parsed && typeof parsed === 'object') ? parsed : {};
-            } catch (err) {
-                return {};
-            }
-        }
-
-        function savePlayerRatings(playerRatings) {
-            localStorage.setItem(PLAYER_RATING_STORAGE_KEY, JSON.stringify(playerRatings));
-        }
-
-        function loadLevelComments() {
-            try {
-                const raw = localStorage.getItem(LEVEL_COMMENTS_STORAGE_KEY);
-                if (!raw) return {};
-                const parsed = JSON.parse(raw);
-                return (parsed && typeof parsed === 'object') ? parsed : {};
-            } catch (err) {
-                return {};
-            }
-        }
-
-        function saveLevelComments(levelComments) {
-            localStorage.setItem(LEVEL_COMMENTS_STORAGE_KEY, JSON.stringify(levelComments));
-        }
-
-        function loadPlayerComments() {
-            try {
-                const raw = localStorage.getItem(PLAYER_COMMENT_STORAGE_KEY);
-                if (!raw) return {};
-                const parsed = JSON.parse(raw);
-                return (parsed && typeof parsed === 'object') ? parsed : {};
-            } catch (err) {
-                return {};
-            }
-        }
-
-        function savePlayerComments(playerComments) {
-            localStorage.setItem(PLAYER_COMMENT_STORAGE_KEY, JSON.stringify(playerComments));
-        }
-
-        function getLevelRatingStat(level, ratingStats) {
+        function getLevelRatingStat(level) {
             const key = toLevelKey(level);
-            const stat = ratingStats[key] || { total: 0, count: 0 };
-            const average = stat.count > 0 ? (stat.total / stat.count) : 0;
-            return { key, total: stat.total, count: stat.count, average };
+            const summary = feedbackByLevel[key] || {};
+            const average = Number(summary.average || 0);
+            const count = Number(summary.count || 0);
+            const playerRating = Number.isInteger(summary.playerRating) ? summary.playerRating : 0;
+            const playerComment = summary.playerComment || '';
+            const comments = Array.isArray(summary.comments) ? summary.comments : [];
+            return { key, average, count, playerRating, playerComment, comments };
         }
 
-        let ratingStats = loadRatingStats();
-        let playerRatings = loadPlayerRatings();
-        let levelComments = loadLevelComments();
-        let playerComments = loadPlayerComments();
+        async function refreshFeedbackData() {
+            const params = new URLSearchParams();
+            params.set('playerId', playerId);
+            levels.forEach((level) => params.append('levelKeys', toLevelKey(level)));
+
+            const response = await fetch(`/api/level-feedback?${params.toString()}`);
+            if (!response.ok) {
+                throw new Error('Failed to load level feedback.');
+            }
+            feedbackByLevel = await response.json();
+        }
 
         function getPresetFromUrl() {
             const params = new URLSearchParams(window.location.search);
             return params.get('preset') || '';
         }
 
-        function submitLevelRating(levelKey, stars) {
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        async function submitLevelRating(levelKey, stars) {
             if (!Number.isInteger(stars) || stars < 1 || stars > 5) return;
 
-            const current = ratingStats[levelKey] || { total: 0, count: 0 };
-            const previousPlayerRating = playerRatings[levelKey];
-
-            if (Number.isInteger(previousPlayerRating)) {
-                // Player already rated: edit previous rating, do not create a new submission.
-                ratingStats[levelKey] = {
-                    total: current.total - previousPlayerRating + stars,
-                    count: current.count
-                };
-            } else {
-                // First rating from this player for this level: count as one submission.
-                ratingStats[levelKey] = {
-                    total: current.total + stars,
-                    count: current.count + 1
-                };
+            const response = await fetch(`/api/level-feedback/${encodeURIComponent(levelKey)}/rating`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ playerId, rating: stars })
+            });
+            if (!response.ok) {
+                alert('Unable to save rating right now. Please try again.');
+                return;
             }
-
-            playerRatings[levelKey] = stars;
-
-            saveRatingStats(ratingStats);
-            savePlayerRatings(playerRatings);
+            feedbackByLevel[levelKey] = await response.json();
             applyFilters();
         }
 
-        function submitLevelComment(levelKey, commentText) {
+        async function submitLevelComment(levelKey, commentText) {
             const trimmedComment = (commentText || '').trim();
-            const playerRating = playerRatings[levelKey];
-
-            if (!Number.isInteger(playerRating)) {
-                alert('Please pick a star rating first, then leave your comment.');
-                return;
-            }
 
             if (!trimmedComment) {
                 alert('Please enter a short comment before submitting.');
                 return;
             }
 
-            const levelCommentList = Array.isArray(levelComments[levelKey]) ? levelComments[levelKey] : [];
-            const timestamp = new Date().toISOString();
-            const playerCommentEntry = {
-                author: 'You',
-                rating: playerRating,
-                comment: trimmedComment,
-                timestamp,
-                isPlayer: true
-            };
-
-            const existingPlayerCommentIndex = levelCommentList.findIndex((entry) => entry && entry.isPlayer);
-            if (existingPlayerCommentIndex >= 0) {
-                levelCommentList[existingPlayerCommentIndex] = playerCommentEntry;
-            } else {
-                levelCommentList.unshift(playerCommentEntry);
+            const response = await fetch(`/api/level-feedback/${encodeURIComponent(levelKey)}/comment`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ playerId, comment: trimmedComment })
+            });
+            if (!response.ok) {
+                alert('Submit a rating first, then save your comment.');
+                return;
             }
-
-            levelComments[levelKey] = levelCommentList;
-            playerComments[levelKey] = trimmedComment;
-
-            saveLevelComments(levelComments);
-            savePlayerComments(playerComments);
+            feedbackByLevel[levelKey] = await response.json();
             applyFilters();
         }
 
@@ -294,11 +233,11 @@
             container.innerHTML = '';
 
             filteredLevels.forEach((level, index) => {
-                const rating = getLevelRatingStat(level, ratingStats);
+                const rating = getLevelRatingStat(level);
                 const roundedAverage = Math.round(rating.average);
-                const playerRating = playerRatings[rating.key] || 0;
-                const existingPlayerComment = playerComments[rating.key] || '';
-                const commentsForLevel = Array.isArray(levelComments[rating.key]) ? levelComments[rating.key] : [];
+                const playerRating = rating.playerRating || 0;
+                const existingPlayerComment = rating.playerComment || '';
+                const commentsForLevel = rating.comments || [];
                 const levelDiv = document.createElement('div');
                 levelDiv.className = 'Level';
                 levelDiv.innerHTML = `
@@ -335,8 +274,8 @@
                                 ${commentsForLevel.length
                                     ? commentsForLevel.map((entry) => `
                                         <div class="level-comment-item ${entry.isPlayer ? 'is-player-comment' : ''}">
-                                            <p class="comment-meta">${entry.author} - ${entry.rating}/5</p>
-                                            <p class="comment-body">${entry.comment}</p>
+                                            <p class="comment-meta">${escapeHtml(entry.author || 'Player')} - ${Number(entry.rating || 0)}/5</p>
+                                            <p class="comment-body">${escapeHtml(entry.comment || '')}</p>
                                         </div>
                                     `).join('')
                                     : '<p class="comment-empty">No comments yet.</p>'
@@ -400,8 +339,8 @@
                     const indexB = canonicalDifficulties.indexOf(coreB);
                     return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
                 } else if (sortBy === 'rating') {
-                    const ratingA = getLevelRatingStat(a, ratingStats);
-                    const ratingB = getLevelRatingStat(b, ratingStats);
+                    const ratingA = getLevelRatingStat(a);
+                    const ratingB = getLevelRatingStat(b);
 
                     // Put rated levels first; unrated levels at the bottom.
                     if (ratingA.count === 0 && ratingB.count > 0) return 1;
@@ -427,13 +366,19 @@
             renderLevels(filtered);
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const preset = getPresetFromUrl();
             if (preset === 'top-rated') {
                 document.getElementById('sortSelect').value = 'rating';
             }
 
-            applyFilters(); // Initial load sorted by name
+            try {
+                await refreshFeedbackData();
+            } catch (err) {
+                console.error(err);
+            }
+
+            applyFilters();
 
             document.getElementById('searchInput').addEventListener('input', applyFilters);
             document.getElementById('difficultyFilter').addEventListener('change', applyFilters);

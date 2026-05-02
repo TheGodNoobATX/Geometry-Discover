@@ -22,7 +22,7 @@ public class SecurityConfiguration {
         http
             .userDetailsService(userService)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/home", "/login", "/register", "/search", "/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/", "/home", "/login", "/register", "/search", "/css/**", "/js/**", "/images/**", "/api/level-feedback/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
