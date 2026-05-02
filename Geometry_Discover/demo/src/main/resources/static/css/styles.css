@@ -1,0 +1,397 @@
+.Home {
+    background-color: royalblue;
+}
+
+:root {
+    --bg-main-percent: 60%;
+    /* Responsive tile size: scales with both vh and vw so side panels work on any aspect ratio (not just 16:9) */
+    --tile-size: min(calc(100vh / 5), calc(100vw / 10));
+    --side-gap: 0px; /* gap from the viewport edge */
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    /* removed full-page gradient so it won't appear mid-screen */
+    background-image: 
+        url('/images/background.jpg'),
+        url('/images/gdblock.jpg');
+    background-repeat: no-repeat, repeat;
+    background-position: center center, left top;
+    background-size: cover, auto;
+    font-family: 'Arial Black', sans-serif;
+    overflow: hidden;
+}
+
+/* Left and right side panels: exactly 2 columns x 5 rows of gdblock.jpg */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    width: calc(var(--tile-size) * 2);
+    height: calc(var(--tile-size) * 5); /* equals 100vh by construction */
+    background-image: url('/images/gdblock.jpg');
+    background-repeat: repeat;
+    background-size: var(--tile-size) var(--tile-size);
+    background-position: 0 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+body::before { left: var(--side-gap); }
+body::after { right: var(--side-gap); left: auto; }
+
+/* ensure main content renders above side panels */
+.menu-container { position: relative; z-index: 1; }
+
+/* Search page: levels content must sit above body::before/body::after background blocks */
+.search-page-container {
+    position: relative;
+    z-index: 1;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+/* Bottom overlay: fixed band at the very bottom, above all content */
+html::after {
+    content: "";
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 18vh; /* adjust height as needed */
+    background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0));
+    z-index: 9999;
+    pointer-events: none;
+}
+
+@media (max-width: 800px) {
+    body {
+        background-size: cover, 90% auto, auto;
+    }
+}
+
+/* Responsive side panels: scale tile size for narrow/wide aspect ratios */
+@media (max-aspect-ratio: 4/3) {
+    :root {
+        --tile-size: min(calc(100vh / 5), calc(100vw / 8));
+    }
+}
+
+@media (min-aspect-ratio: 21/9) {
+    :root {
+        --tile-size: min(calc(100vh / 5), calc(100vw / 12));
+    }
+}
+
+/* Search page: level cards, dividers, and level image layout */
+.search-page-container .Levels {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.search-page-container .Level {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    padding: 16px;
+    background: rgba(0,0,0,0.4);
+    min-width: 200px;
+}
+
+/* Divider between levels - background for visual separation */
+.search-page-container .level-divider {
+    height: 4px;
+    margin: 12px 0;
+    background: linear-gradient(90deg, transparent, rgba(0,255,204,0.5), transparent);
+    border-radius: 2px;
+}
+
+.search-page-container .level-image-wrapper {
+    flex-shrink: 0;
+    width: 120px;
+    height: 90px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: rgba(0,0,0,0.5);
+}
+
+.search-page-container .level-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-page-container .level-info h3 {
+    margin: 0 0 8px 0;
+    color: #00ffcc;
+}
+
+.search-page-container .level-info p {
+    margin: 4px 0;
+    color: rgba(255,255,255,0.9);
+}
+
+.search-page-container .level-rating {
+    margin-top: 10px;
+}
+
+.search-page-container .rating-summary {
+    margin: 0 0 6px 0;
+    font-size: 14px;
+    color: #ffe680;
+}
+
+.search-page-container .star-rating {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.search-page-container .star-btn {
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.35);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+}
+
+.search-page-container .star-btn.filled {
+    color: #ffd700;
+}
+
+.search-page-container .star-btn.player-selected {
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+}
+
+.search-page-container .star-btn:hover {
+    color: #ffd700;
+    transform: scale(1.06);
+}
+
+.search-page-container .level-comment-composer {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.search-page-container .level-comment-composer label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+}
+
+.search-page-container .level-comment-input {
+    resize: vertical;
+    min-height: 60px;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 8px;
+    background: rgba(0,0,0,0.35);
+    color: #fff;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+}
+
+.search-page-container .level-comment-btn {
+    align-self: flex-start;
+    font-size: 14px;
+    padding: 8px 14px;
+}
+
+.search-page-container .level-comments-list {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.search-page-container .level-comment-item {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+
+.search-page-container .level-comment-item.is-player-comment {
+    border-color: rgba(255, 215, 0, 0.55);
+}
+
+.search-page-container .comment-meta {
+    margin: 0 0 4px 0;
+    color: #ffe680;
+    font-size: 12px;
+}
+
+.search-page-container .comment-body {
+    margin: 0;
+    color: rgba(255,255,255,0.95);
+    font-family: Arial, sans-serif;
+    white-space: pre-wrap;
+}
+
+.search-page-container .comment-empty {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    font-family: Arial, sans-serif;
+}
+
+.menu-container {
+    text-align: center;
+    margin-top: 120px;
+}
+
+/* Main Title */
+.gd-title {
+    font-size: 64px;
+    color: #00ffcc;
+    text-shadow:
+        4px 4px 0px #000,
+        8px 8px 0px #ff00ff;
+    letter-spacing: 4px;
+}
+
+/* Subtitle */
+.gd-subtitle {
+    font-size: 28px;
+    color: white;
+    margin-bottom: 60px;
+}
+
+/* Button Layout */
+.button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+/* Geometry Dash Style Buttons */
+.gd-button-green {
+    text-decoration: none;
+    font-size: 24px;
+    padding: 20px 60px;
+    border-radius: 15px;
+    color: white;
+    font-weight: bold;
+    transition: 0.2s;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.5);
+    background-color: #00cc66;
+}
+
+.gd-button-blue {
+    text-decoration: none;
+    font-size: 24px;
+    padding: 20px 60px;
+    border-radius: 15px;
+    color: white;
+    font-weight: bold;
+    transition: 0.2s;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.5);
+    background-color: #0066cc;
+}
+
+.gd-button-pink {
+    text-decoration: none;
+    font-size: 24px;
+    padding: 20px 60px;
+    border-radius: 15px;
+    color: white;
+    font-weight: bold;
+    transition: 0.2s;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.5);
+    background-color: #cc66cc;
+}
+
+.gd-button-orange {
+    text-decoration: none;
+    font-size: 24px;
+    padding: 20px 60px;
+    border-radius: 15px;
+    color: white;
+    font-weight: bold;
+    transition: 0.2s;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.5);
+    background-color: #ffaa66;
+}
+
+/* Button press effect */
+.gd-button-green:hover {
+    transform: translateY(4px);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.5);
+}
+
+.gd-button-blue:hover {
+    transform: translateY(4px);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.5);
+}
+
+.gd-button-pink:hover {
+    transform: translateY(4px);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.5);
+}
+
+.gd-button-orange:hover {
+    transform: translateY(4px);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.5);
+}
+
+/* Search controls - new styles for search feature */
+.search-page-container .search-controls {
+    position: sticky;
+    top: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+    padding: 15px 20px;
+    z-index: 10;
+    border-bottom: 2px solid rgba(0,255,204,0.5);
+    margin-bottom: 20px;
+}
+
+.search-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    max-width: 900px;
+    margin: 0 auto 20px;
+}
+
+.search-controls input, 
+.search-controls select {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    color: #00ffcc;
+    font-family: 'Arial Black', sans-serif;
+    font-size: 16px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.search-controls input::placeholder {
+    color: rgba(0,255,204,0.6);
+}
+
+.search-controls input:focus, 
+.search-controls select:focus {
+    outline: none;
+    box-shadow: 0 0 12px rgba(0,255,204,0.6);
+    background: rgba(255,255,255,0.2);
+}
+
+.search-controls .gd-search-button {
+    padding: 12px 24px;
+    font-size: 16px;
+    flex-shrink: 0;
+}

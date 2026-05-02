@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Geometry Discover</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div class="menu-container">
+
+    <h1 class="gd-title">GEOMETRY DASH</h1>
+    <h2 class="gd-subtitle">Level Ratings</h2>
+
+    <div class="button-container">
+        <a th:href="@{/search}" class="gd-button-green">SEARCH LEVELS</a>
+        <a th:href="@{/search(preset='top-rated')}" class="gd-button-blue">TOP RATED</a>
+        <a th:href="@{/search(preset='recently-added')}" class="gd-button-pink">RECENTLY ADDED</a>
+        <a th:href="@{/login}" class="gd-button-orange">LOGIN</a>
+    </div>
+
+</div>
+
+</body>
+</html>

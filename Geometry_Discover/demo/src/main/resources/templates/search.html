@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search - Geometry Discover</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div class="search-page-container">
+        <div class="search-controls">
+            <input type="text" id="searchInput" placeholder="Search by name or creator...">
+            <select id="difficultyFilter">
+                <option value="">All Difficulties</option>
+                <option value="Auto">Auto</option>
+                <option value="Easy">Easy</option>
+                <option value="Normal">Normal</option>
+                <option value="Hard">Hard</option>
+                <option value="Harder">Harder</option>
+                <option value="Insane">Insane</option>
+                <option value="Easy Demon">Easy Demon</option>
+                <option value="Medium Demon">Medium Demon</option>
+                <option value="Hard Demon">Hard Demon</option>
+                <option value="Insane Demon">Insane Demon</option>
+                <option value="Extreme Demon">Extreme Demon</option>
+                <option value="Unverified">Unverified</option>
+                <option value="Unstable">Unstable</option>
+            </select>
+            <select id="sortSelect">
+                <option value="name">Sort by Name (A-Z)</option>
+                <option value="difficulty">Sort by Difficulty</option>
+                <option value="creator">Sort by Creator</option>
+                <option value="rating">Sort by Rating (High-Low)</option>
+            </select>
+            <button class="gd-button-green gd-search-button" id="clearBtn">Clear Filters</button>
+        </div>
+        <div class="Levels">
+            <div id="levels-container">
+            <!-- Dynamic levels will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const levels = [
+            {name: '0 Exit', creator: 'MiNaY', difficulty: 'Low-Mid Easy Demon', image: '0 Exit.jpg'},
+            {name: 'Aeternus', creator: 'Riot', difficulty: 'Unverified', image: 'Aeternus.jpg'},
+            {name: 'B', creator: 'Motleyorc', difficulty: 'Base Medium Demon', image: 'B.jpg'},
+            {name: 'Basic 3rr0r', creator: 'HanStor', difficulty: 'Mid Insane', image: 'Basic 3rr0r.jpg'},
+            {name: 'Bloodbath', creator: 'Riot', difficulty: 'Mid Extreme Demon', image: 'Bloodbath.jpg'},
+            {name: 'BUSSIN', creator: 'connot', difficulty: 'Base-Low Insane', image: 'BUSSIN.jpg'},
+            {name: 'Button Masher', creator: 'Viprin', difficulty: 'Mid Easy Demon', image: 'Button Masher.jpg'},
+            {name: 'Change of Scene', creator: 'Bli', difficulty: 'High Easy Demon', image: 'Change of Scene.jpg'},
+            {name: 'Crazy', creator: 'DavJT', difficulty: 'Base-Low Hard Demon', image: 'Crazy.jpg'},
+            {name: 'Crazy II', creator: 'DavJT', difficulty: 'Base Insane Demon', image: 'Crazy II.jpg'},
+            {name: 'Crazy III', creator: 'DavJT', difficulty: 'High-Peak Insane Demon', image: 'Crazy III.jpg'},
+            {name: 'Death Corridor', creator: 'KaotikJumper', difficulty: 'Unverified', image: 'Death Corridor.jpg'},
+            {name: 'DEEPDIVE', creator: 'Vealt', difficulty: 'High-Peak Medium Demon', image: 'DEEPDIVE.jpg'},
+            {name: 'Dronification', creator: 'IvyTeal', difficulty: 'Unstable', image: 'Dronification.jpg'},
+            {name: 'Eternity', creator: 'Viprin', difficulty: 'Low-Mid Medium Demon', image: 'Eternity.jpg'},
+            {name: 'Freestyle', creator: 'Vitto912', difficulty: 'Mid-High Easy Demon', image: 'Freestyle.jpg'},
+            {name: 'Funhouse', creator: 'Rafer', difficulty: 'Base-Low Insane', image: 'Funhouse.jpg'},
+            {name: 'Future Funk', creator: 'JonathanGD', difficulty: 'Mid Hard Demon', image: 'Future Funk.jpg'},
+            {name: 'Ghost Ship', creator: 'ThanatosGMD', difficulty: 'High-Peak Easy Demon', image: 'Ghost Ship.jpg'},
+            {name: 'Grief', creator: 'Icedcave', difficulty: 'Unverified', image: 'Grief.jpg'},
+            {name: 'Hypersonic', creator: 'Viprin', difficulty: 'Low Extreme Demon', image: 'Hypersonic.jpg'},
+            {name: 'ISPYWITHMYLITTLEEYE', creator: 'Voxicat', difficulty: 'Base Easy Demon', image: 'ISPYWITHMYLITTLEEYE.jpg'},
+            {name: 'Kyouki', creator: 'Demishio', difficulty: 'Peak Extreme Demon', image: 'Kyouki.jpg'},
+            {name: 'LIMBO', creator: 'MindCap', difficulty: 'Peak Extreme Demon', image: 'LIMBO.jpg'},
+            {name: 'Magma Bound', creator: 'ScorchVX', difficulty: 'Base Insane Demon', image: 'Magma Bound.jpg'},
+            {name: 'Mayhem', creator: 'CherryTeam', difficulty: 'High-Peak Extreme Demon', image: 'Mayhem.jpg'},
+            {name: 'Nantendo', creator: 'Im Fernando', difficulty: 'High Medium Demon', image: 'Nantendo.jpg'},
+            {name: 'Nomad', creator: 'ReeseVT', difficulty: 'mid-Extreme Demon', image: 'Nomad.jpg'},
+            {name: 'ORBIT', creator: 'MindCap', difficulty: 'Peak Extreme Demon', image: 'ORBIT.jpg'},
+            {name: 'Psychosis', creator: 'Hinds', difficulty: 'High-Peak Hard Demon', image: 'Psychosis.jpg'},
+            {name: 'ReTraY', creator: 'DiMaViKuLov26', difficulty: 'Low Easy', image: 'ReTraY.jpg'},
+            {name: 'Reanimation', creator: 'Terron', difficulty: 'High Medium Demon', image: 'Reanimation.jpg'},
+            {name: 'Sakupen End', creator: 'Nick24', difficulty: 'Unverified', image: 'Sakupen End.jpg'},
+            {name: 'Shock', creator: 'Danolex', difficulty: 'Low-Mid Harder', image: 'Shock.jpg'},
+            {name: 'Silent Silhouette', creator: 'Hhuuko', difficulty: 'Peak Extreme Demon', image: 'Silent Silhouette.jpg'},
+            {name: 'Skeletal Shenanigans', creator: 'YoReid', difficulty: 'High Medium Demon', image: 'Skeletal Shenanigans.jpg'},
+            {name: 'The Nightmare', creator: 'Jax', difficulty: 'Base Easy Demon', image: 'The Nightmare.jpg'},
+            {name: 'The Towerverse', creator: '16Lord', difficulty: 'Platformer Mid Hard Demon', image: 'The Towerverse.jpg'},
+            {name: 'Tidal Wave', creator: 'Onilink', difficulty: 'Peak Extreme Demon', image: 'Tidal Wave.jpg'},
+            {name: 'Ultra Drivers', creator: 'Lazerblitz', difficulty: 'High Hard Demon', image: 'Ultra Drivers.jpg'},
+            {name: 'Update Disorder', creator: 'DangerousROBOT', difficulty: 'High-Peak Insane', image: 'Update Disorder.jpg'},
+            {name: 'White Space', creator: 'XenderGame', difficulty: 'Low-Mid Easy Demon', image: 'White Space.jpg'},
+            {name: 'Windy Landscape', creator: 'Woogi1411', difficulty: 'Base Insane Demon', image: 'Windy Landscape.jpg'},
+            {name: 'Yatagarasu', creator: 'Trusta', difficulty: 'Mid-High Extreme Demon', image: 'Yatagarasu.jpg'},
+            {name: 'youwhenbeecrusher', creator: 'Akunakun', difficulty: 'Peak Extreme Demon', image: 'youwhenbeecrusher.jpg'},
+            {name: 'Sunshine', creator: 'Unzor', difficulty: 'Mid-Harder', image: 'Sunshine.jpg'},
+            {name: 'Heartbeat', creator: 'Krmal', difficulty: 'Low-Mid Extreme Demon', image: 'Heartbeat.jpg'},
+            {name: 'The Yatagarasu', creator: 'Manix648', difficulty: 'High-Peak Hard Demon', image: 'The Yatagarasu.jpg'},
+            {name: 'Future Funk II', creator: 'JonathanGD', difficulty: 'Mid-High Insane Demon', image: 'Future Funk II.jpg'},
+            {name: 'Space Invaders', creator: 'DeeperSpace', difficulty: 'Low-Mid Hard Demon', image: 'Space Invaders.jpg'},
+            {name: 'CICADA3302', creator: 'Darwin', difficulty: 'Mid-High Extreme Demon', image: 'CICADA3302.jpg'},
+            {name: 'WANNACRY', creator: 'kira9999', difficulty: 'Mid-High Medium Demon', image: 'WANNACRY.jpg'},
+            {name: 'Tornado', creator: 'AbstractDark', difficulty: 'Platformer Low-Mid Harder', image: 'Tornado.jpg'},
+            {name: 'Unknown Seas', creator: 'CapaXL', difficulty: 'Peak Normal', image: 'Unknown Seas.jpg'},
+            {name: 'Rage Quit', creator: 'Bli', difficulty: 'High Easy', image: 'Rage Quit.jpg'},
+            {name: 'Bloodlust', creator: 'Knobbelboy', difficulty: 'High Extreme Demon', image: 'Bloodlust.jpg'},
+            {name: 'End of line', creator: 'PMK', difficulty: 'Mid-High Normal', image: 'End of line.jpg'},
+            {name: 'Auto Play Area', creator: 'Jax', difficulty: 'Auto', image: 'Auto Play Area.jpg'},
+            {name: 'Anubis', creator: 'Adiale', difficulty: 'Mid Hard', image: 'Anubis.jpg'},
+            {name: 'Game Over', creator: 'Optation', difficulty: 'High-Peak Easy Demon', image: 'Game Over.jpg'},
+            {name: 'Stereo Madness', creator: 'RobTop', difficulty: 'Peak Easy', image: 'Stereo Madness.jpg'},
+            {name: 'Back On Track', creator: 'RobTop', difficulty: 'Peak Easy', image: 'Back On Track.jpg'},
+            {name: 'Polargeist', creator: 'RobTop', difficulty: 'Mid-High Normal', image: 'Polargeist.jpg'},
+            {name: 'Dry Out', creator: 'RobTop', difficulty: 'High Normal', image: 'Dry Out.jpg'},
+            {name: 'Base After Base', creator: 'RobTop', difficulty: 'Mid Hard', image: 'Base After Base.jpg'},
+            {name: 'Cant Let Go', creator: 'RobTop', difficulty: 'Peak Hard', image: 'Cant Let Go.jpg'}
+        ];
+
+        const RATING_STORAGE_KEY = 'gd-level-ratings-v1';
+        const PLAYER_RATING_STORAGE_KEY = 'gd-player-ratings-v1';
+        const LEVEL_COMMENTS_STORAGE_KEY = 'gd-level-comments-v1';
+        const PLAYER_COMMENT_STORAGE_KEY = 'gd-player-comments-v1';
+
+        const canonicalDifficulties = [
+            'Auto', 'Easy', 'Normal', 'Hard', 'Harder', 'Insane',
+            'Easy Demon', 'Medium Demon', 'Hard Demon', 'Insane Demon', 'Extreme Demon',
+            'Unverified', 'Unstable'
+        ];
+
+        function toLevelKey(level) {
+            return `${level.name}__${level.creator}`
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '');
+        }
+
+        function loadRatingStats() {
+            try {
+                const raw = localStorage.getItem(RATING_STORAGE_KEY);
+                if (!raw) return {};
+                const parsed = JSON.parse(raw);
+                return (parsed && typeof parsed === 'object') ? parsed : {};
+            } catch (err) {
+                return {};
+            }
+        }
+
+        function saveRatingStats(stats) {
+            localStorage.setItem(RATING_STORAGE_KEY, JSON.stringify(stats));
+        }
+
+        function loadPlayerRatings() {
+            try {
+                const raw = localStorage.getItem(PLAYER_RATING_STORAGE_KEY);
+                if (!raw) return {};
+                const parsed = JSON.parse(raw);
+                return (parsed && typeof parsed === 'object') ? parsed : {};
+            } catch (err) {
+                return {};
+            }
+        }
+
+        function savePlayerRatings(playerRatings) {
+            localStorage.setItem(PLAYER_RATING_STORAGE_KEY, JSON.stringify(playerRatings));
+        }
+
+        function loadLevelComments() {
+            try {
+                const raw = localStorage.getItem(LEVEL_COMMENTS_STORAGE_KEY);
+                if (!raw) return {};
+                const parsed = JSON.parse(raw);
+                return (parsed && typeof parsed === 'object') ? parsed : {};
+            } catch (err) {
+                return {};
+            }
+        }
+
+        function saveLevelComments(levelComments) {
+            localStorage.setItem(LEVEL_COMMENTS_STORAGE_KEY, JSON.stringify(levelComments));
+        }
+
+        function loadPlayerComments() {
+            try {
+                const raw = localStorage.getItem(PLAYER_COMMENT_STORAGE_KEY);
+                if (!raw) return {};
+                const parsed = JSON.parse(raw);
+                return (parsed && typeof parsed === 'object') ? parsed : {};
+            } catch (err) {
+                return {};
+            }
+        }
+
+        function savePlayerComments(playerComments) {
+            localStorage.setItem(PLAYER_COMMENT_STORAGE_KEY, JSON.stringify(playerComments));
+        }
+
+        function getLevelRatingStat(level, ratingStats) {
+            const key = toLevelKey(level);
+            const stat = ratingStats[key] || { total: 0, count: 0 };
+            const average = stat.count > 0 ? (stat.total / stat.count) : 0;
+            return { key, total: stat.total, count: stat.count, average };
+        }
+
+        let ratingStats = loadRatingStats();
+        let playerRatings = loadPlayerRatings();
+        let levelComments = loadLevelComments();
+        let playerComments = loadPlayerComments();
+
+        function getPresetFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('preset') || '';
+        }
+
+        function submitLevelRating(levelKey, stars) {
+            if (!Number.isInteger(stars) || stars < 1 || stars > 5) return;
+
+            const current = ratingStats[levelKey] || { total: 0, count: 0 };
+            const previousPlayerRating = playerRatings[levelKey];
+
+            if (Number.isInteger(previousPlayerRating)) {
+                // Player already rated: edit previous rating, do not create a new submission.
+                ratingStats[levelKey] = {
+                    total: current.total - previousPlayerRating + stars,
+                    count: current.count
+                };
+            } else {
+                // First rating from this player for this level: count as one submission.
+                ratingStats[levelKey] = {
+                    total: current.total + stars,
+                    count: current.count + 1
+                };
+            }
+
+            playerRatings[levelKey] = stars;
+
+            saveRatingStats(ratingStats);
+            savePlayerRatings(playerRatings);
+            applyFilters();
+        }
+
+        function submitLevelComment(levelKey, commentText) {
+            const trimmedComment = (commentText || '').trim();
+            const playerRating = playerRatings[levelKey];
+
+            if (!Number.isInteger(playerRating)) {
+                alert('Please pick a star rating first, then leave your comment.');
+                return;
+            }
+
+            if (!trimmedComment) {
+                alert('Please enter a short comment before submitting.');
+                return;
+            }
+
+            const levelCommentList = Array.isArray(levelComments[levelKey]) ? levelComments[levelKey] : [];
+            const timestamp = new Date().toISOString();
+            const playerCommentEntry = {
+                author: 'You',
+                rating: playerRating,
+                comment: trimmedComment,
+                timestamp,
+                isPlayer: true
+            };
+
+            const existingPlayerCommentIndex = levelCommentList.findIndex((entry) => entry && entry.isPlayer);
+            if (existingPlayerCommentIndex >= 0) {
+                levelCommentList[existingPlayerCommentIndex] = playerCommentEntry;
+            } else {
+                levelCommentList.unshift(playerCommentEntry);
+            }
+
+            levelComments[levelKey] = levelCommentList;
+            playerComments[levelKey] = trimmedComment;
+
+            saveLevelComments(levelComments);
+            savePlayerComments(playerComments);
+            applyFilters();
+        }
+
+        function getCoreDifficulty(fullDiff) {
+            if (!fullDiff) return '';
+            let words = fullDiff.toLowerCase().replace(/-/g, ' ').split(/\s+/).filter(w => w);
+            if (words[0] === 'platformer') words.shift();
+            let core;
+            const last = words[words.length - 1];
+            if (last === 'demon') {
+                core = words.slice(-2).join(' ');
+            } else {
+                core = last;
+            }
+            for (let diff of canonicalDifficulties) {
+                if (core === diff.toLowerCase()) return diff;
+            }
+            return fullDiff; // fallback
+        }
+
+        function renderLevels(filteredLevels) {
+            const container = document.getElementById('levels-container');
+            container.innerHTML = '';
+
+            filteredLevels.forEach((level, index) => {
+                const rating = getLevelRatingStat(level, ratingStats);
+                const roundedAverage = Math.round(rating.average);
+                const playerRating = playerRatings[rating.key] || 0;
+                const existingPlayerComment = playerComments[rating.key] || '';
+                const commentsForLevel = Array.isArray(levelComments[rating.key]) ? levelComments[rating.key] : [];
+                const levelDiv = document.createElement('div');
+                levelDiv.className = 'Level';
+                levelDiv.innerHTML = `
+                    <div class="level-image-wrapper">
+                        <img src="/images/${level.image}" alt="${level.name} preview" style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    <div class="level-info">
+                        <h3>${level.name}</h3>
+                        <p>Creator: ${level.creator}</p>
+                        <p>Difficulty: ${level.difficulty}</p>
+                        <div class="level-rating">
+                            <p class="rating-summary">Average: ${rating.average.toFixed(2)} / 5 (${rating.count} ratings)</p>
+                            <p class="rating-summary">Your rating: ${playerRating ? `${playerRating} / 5` : 'Not rated yet'}</p>
+                            <div class="star-rating">
+                                ${[1, 2, 3, 4, 5].map((star) => `
+                                    <button
+                                        type="button"
+                                        class="star-btn ${star <= roundedAverage ? 'filled' : ''} ${star <= playerRating ? 'player-selected' : ''}"
+                                        data-level-key="${rating.key}"
+                                        data-stars="${star}"
+                                        aria-label="Rate ${level.name} ${star} out of 5 stars"
+                                        title="Rate ${star} star${star > 1 ? 's' : ''}"
+                                    >★</button>
+                                `).join('')}
+                            </div>
+                            <div class="level-comment-composer">
+                                <label for="comment-${rating.key}">Why this rating?</label>
+                                <textarea id="comment-${rating.key}" class="level-comment-input" placeholder="Share what you liked or disliked...">${existingPlayerComment}</textarea>
+                                <button type="button" class="gd-button-blue level-comment-btn" data-level-key="${rating.key}">
+                                    Save Comment
+                                </button>
+                            </div>
+                            <div class="level-comments-list">
+                                ${commentsForLevel.length
+                                    ? commentsForLevel.map((entry) => `
+                                        <div class="level-comment-item ${entry.isPlayer ? 'is-player-comment' : ''}">
+                                            <p class="comment-meta">${entry.author} - ${entry.rating}/5</p>
+                                            <p class="comment-body">${entry.comment}</p>
+                                        </div>
+                                    `).join('')
+                                    : '<p class="comment-empty">No comments yet.</p>'
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(levelDiv);
+                
+                if (index < filteredLevels.length - 1) {
+                    const divider = document.createElement('div');
+                    divider.className = 'level-divider';
+                    container.appendChild(divider);
+                }
+            });
+
+            document.querySelectorAll('.star-btn').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const levelKey = button.dataset.levelKey;
+                    const stars = Number(button.dataset.stars);
+                    submitLevelRating(levelKey, stars);
+                });
+            });
+
+            document.querySelectorAll('.level-comment-btn').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const levelKey = button.dataset.levelKey;
+                    const input = document.getElementById(`comment-${levelKey}`);
+                    submitLevelComment(levelKey, input ? input.value : '');
+                });
+            });
+        }
+
+        function applyFilters() {
+            let filtered = [...levels];
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const difficulty = document.getElementById('difficultyFilter').value;
+            const sortBy = document.getElementById('sortSelect').value;
+            const preset = getPresetFromUrl();
+
+            if (searchTerm) {
+                filtered = filtered.filter(level => 
+                    level.name.toLowerCase().includes(searchTerm) || 
+                    level.creator.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            if (difficulty) {
+                filtered = filtered.filter(level => getCoreDifficulty(level.difficulty) === difficulty);
+            }
+
+            filtered.sort((a, b) => {
+                if (preset === 'recently-added') {
+                    // Show all levels by add order, newest first.
+                    return levels.indexOf(b) - levels.indexOf(a);
+                } else if (sortBy === 'difficulty') {
+                    const coreA = getCoreDifficulty(a.difficulty);
+                    const coreB = getCoreDifficulty(b.difficulty);
+                    const indexA = canonicalDifficulties.indexOf(coreA);
+                    const indexB = canonicalDifficulties.indexOf(coreB);
+                    return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
+                } else if (sortBy === 'rating') {
+                    const ratingA = getLevelRatingStat(a, ratingStats);
+                    const ratingB = getLevelRatingStat(b, ratingStats);
+
+                    // Put rated levels first; unrated levels at the bottom.
+                    if (ratingA.count === 0 && ratingB.count > 0) return 1;
+                    if (ratingB.count === 0 && ratingA.count > 0) return -1;
+
+                    // Higher average rating first.
+                    if (ratingB.average !== ratingA.average) {
+                        return ratingB.average - ratingA.average;
+                    }
+
+                    // Tie-breaker: more ratings first, then name.
+                    if (ratingB.count !== ratingA.count) {
+                        return ratingB.count - ratingA.count;
+                    }
+                    return a.name.localeCompare(b.name);
+                } else {
+                    let valA = sortBy === 'creator' ? a.creator : a.name;
+                    let valB = sortBy === 'creator' ? b.creator : b.name;
+                    return valA.localeCompare(valB);
+                }
+            });
+
+            renderLevels(filtered);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const preset = getPresetFromUrl();
+            if (preset === 'top-rated') {
+                document.getElementById('sortSelect').value = 'rating';
+            }
+
+            applyFilters(); // Initial load sorted by name
+
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            document.getElementById('difficultyFilter').addEventListener('change', applyFilters);
+            document.getElementById('sortSelect').addEventListener('change', applyFilters);
+            document.getElementById('clearBtn').addEventListener('click', () => {
+                document.getElementById('searchInput').value = '';
+                document.getElementById('difficultyFilter').value = '';
+                document.getElementById('sortSelect').value = 'name';
+                applyFilters();
+            });
+        });
+    </script>
+</body>
+</html>
