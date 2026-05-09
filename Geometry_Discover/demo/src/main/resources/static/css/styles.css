@@ -308,7 +308,7 @@ html::after {
     font-weight: bold;
     transition: 0.2s;
     box-shadow: 0 8px 0 rgba(0,0,0,0.5);
-    background-color: #cc66cc;
+    background-color: #ff00dd;
 }
 
 .gd-button-orange {
@@ -321,6 +321,18 @@ html::after {
     transition: 0.2s;
     box-shadow: 0 8px 0 rgba(0,0,0,0.5);
     background-color: #ffaa66;
+}
+
+.gd-button-purple {
+    text-decoration: none;
+    font-size: 24px;
+    padding: 20px 60px;
+    border-radius: 15px;
+    color: white;
+    font-weight: bold;
+    transition: 0.2s;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.5);
+    background-color: #b851d1;
 }
 
 /* Button press effect */
@@ -394,4 +406,16 @@ html::after {
     padding: 12px 24px;
     font-size: 16px;
     flex-shrink: 0;
+}
+
+.profile-display {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.6);
+    padding: 10px 15px;
+    border-radius: 8px;
+    color: #00ffcc;
+    font-family: 'Arial Black', sans-serif;
+    z-index: 10000;
 }

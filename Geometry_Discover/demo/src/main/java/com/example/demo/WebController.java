@@ -38,6 +38,11 @@ public class WebController {
         return "register";
     }
 
+    @GetMapping("/profile")
+    public String profile() {
+        return "profile";
+    }
+
     @PostMapping("/register")
     public String registerUser(@RequestParam String username,
                                @RequestParam String password,
