@@ -30,13 +30,14 @@ public class SecurityConfiguration {
                 .requestMatchers("/api/level-feedback/*/rating").hasAnyRole("ADMIN", "USER")
                 .requestMatchers("/api/level-feedback/*/comment").hasAnyRole("ADMIN", "USER")
 
-                .requestMatchers("/api/level-feedback").authenticated()
+                .requestMatchers("/api/level-feedback").permitAll()
                 .requestMatchers("/api/level-feedback/**").authenticated()
             )
 
 
             .formLogin(form -> form
                 .loginPage("/login")
+                .defaultSuccessUrl("/profile", true)
                 .permitAll()
             )
             .logout(logout -> logout.permitAll());
