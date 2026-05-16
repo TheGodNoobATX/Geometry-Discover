@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +7,9 @@
 </head>
 <body>
     <section id="profile-display">
-        <h1><strong><span th:text="${user.username}"></span></strong></h1>
-        <h3><strong>Levels Rated: </strong> <span th:text="${user.email}"></span></h3>
-        <h3><strong>5 Star Rates: </strong> <span th:text="${user.email}"></span></h3>
+        <h1><strong><span th:text="${username}"></span></strong></h1>
+        <h3><strong>Levels Rated: </strong> <span th:text="${email}"></span></h3>
+        <h3><strong>5 Star Rates: </strong> <span th:text="${email}"></span></h3>
     </section>
 </body>
 </html>
