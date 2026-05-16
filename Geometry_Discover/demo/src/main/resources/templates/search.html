@@ -230,7 +230,6 @@
 
             filteredLevels.forEach((level, index) => {
                 const rating = getLevelRatingStat(level);
-                const roundedAverage = Math.round(rating.average);
                 const playerRating = rating.playerRating || 0;
                 const existingPlayerComment = rating.playerComment || '';
                 const commentsForLevel = rating.comments || [];
@@ -251,7 +250,7 @@
                                 ${[1, 2, 3, 4, 5].map((star) => `
                                     <button
                                         type="button"
-                                        class="star-btn ${star <= roundedAverage ? 'filled' : ''} ${star <= playerRating ? 'player-selected' : ''}"
+                                        class="star-btn ${star <= playerRating ? 'filled player-selected' : ''}"
                                         data-level-key="${rating.key}"
                                         data-stars="${star}"
                                         aria-label="Rate ${level.name} ${star} out of 5 stars"

@@ -127,7 +127,7 @@ public class LevelFeedbackController {
                 Integer rowRating = row.getRating();
                 int commentRating = rowRating != null ? rowRating : 0;
                 comments.add(new CommentDto(
-                    isPlayer ? "You" : "Player",
+                    isPlayer ? "You" : row.getPlayerId(),
                     commentRating,
                     row.getComment(),
                     row.getUpdatedAt(),
