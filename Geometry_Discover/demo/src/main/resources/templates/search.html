@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>Search - Geometry Discover</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
@@ -111,8 +113,6 @@
             {name: 'Cant Let Go', creator: 'RobTop', difficulty: 'Peak Hard', image: 'Cant Let Go.jpg'}
         ];
 
-        const PLAYER_ID_STORAGE_KEY = 'gd-player-id-v1';
-
         const canonicalDifficulties = [
             'Auto', 'Easy', 'Normal', 'Hard', 'Harder', 'Insane',
             'Easy Demon', 'Medium Demon', 'Hard Demon', 'Insane Demon', 'Extreme Demon',
@@ -126,16 +126,13 @@
                 .replace(/(^-|-$)/g, '');
         }
 
-        function getOrCreatePlayerId() {
-            const existing = localStorage.getItem(PLAYER_ID_STORAGE_KEY);
-            if (existing) return existing;
-            const created = `player-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-            localStorage.setItem(PLAYER_ID_STORAGE_KEY, created);
-            return created;
-        }
-
-        const playerId = getOrCreatePlayerId();
         let feedbackByLevel = {};
+
+        function getCsrfHeaders() {
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+            return token && header ? { [header]: token } : {};
+        }
 
         function getLevelRatingStat(level) {
             const key = toLevelKey(level);
@@ -150,7 +147,6 @@
 
         async function refreshFeedbackData() {
             const params = new URLSearchParams();
-            params.set('playerId', playerId);
             levels.forEach((level) => params.append('levelKeys', toLevelKey(level)));
 
             const response = await fetch(`/api/level-feedback?${params.toString()}`);
@@ -179,8 +175,8 @@
 
             const response = await fetch(`/api/level-feedback/${encodeURIComponent(levelKey)}/rating`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ playerId, rating: stars })
+                headers: { 'Content-Type': 'application/json', ...getCsrfHeaders() },
+                body: JSON.stringify({ rating: stars })
             });
             if (!response.ok) {
                 alert('Unable to save rating right now. Please try again.');
@@ -200,8 +196,8 @@
 
             const response = await fetch(`/api/level-feedback/${encodeURIComponent(levelKey)}/comment`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ playerId, comment: trimmedComment })
+                headers: { 'Content-Type': 'application/json', ...getCsrfHeaders() },
+                body: JSON.stringify({ comment: trimmedComment })
             });
             if (!response.ok) {
                 alert('Submit a rating first, then save your comment.');

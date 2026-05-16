@@ -1,10 +1,12 @@
 package com.example.demo;
 
+import java.security.Principal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
@@ -27,9 +29,12 @@ public class LevelFeedbackController {
     }
 
     @GetMapping
-    public Map<String, LevelFeedbackSummary> getLevelFeedback(FeedbackQuery query) {
-        List<String> levelKeys = query.levelKeys != null ? query.levelKeys : List.of();
-        String playerId = query.playerId != null ? query.playerId.trim() : "";
+    public Map<String, LevelFeedbackSummary> getLevelFeedback(
+        @RequestParam(name = "levelKeys", required = false) List<String> requestedLevelKeys,
+        Principal principal
+    ) {
+        List<String> levelKeys = requestedLevelKeys != null ? requestedLevelKeys : List.of();
+        String playerId = principal != null ? principal.getName() : "";
 
         List<LevelFeedback> feedbackRows = levelKeys.isEmpty()
             ? List.of()
@@ -49,8 +54,8 @@ public class LevelFeedbackController {
     }
 
     @PutMapping("/{levelKey}/rating")
-    public LevelFeedbackSummary updateRating(@PathVariable String levelKey, @RequestBody RatingRequest request) {
-        String playerId = sanitizePlayerId(request.playerId);
+    public LevelFeedbackSummary updateRating(@PathVariable String levelKey, @RequestBody RatingRequest request, Principal principal) {
+        String playerId = getAuthenticatedPlayerId(principal);
         int rating = request.rating;
         if (rating < 1 || rating > 5) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rating must be between 1 and 5.");
@@ -70,8 +75,8 @@ public class LevelFeedbackController {
     }
 
     @PutMapping("/{levelKey}/comment")
-    public LevelFeedbackSummary updateComment(@PathVariable String levelKey, @RequestBody CommentRequest request) {
-        String playerId = sanitizePlayerId(request.playerId);
+    public LevelFeedbackSummary updateComment(@PathVariable String levelKey, @RequestBody CommentRequest request, Principal principal) {
+        String playerId = getAuthenticatedPlayerId(principal);
         String comment = request.comment != null ? request.comment.trim() : "";
         if (comment.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Comment cannot be empty.");
@@ -90,11 +95,11 @@ public class LevelFeedbackController {
         return toSummary(levelFeedbackRepository.findByLevelKey(levelKey), playerId);
     }
 
-    private static String sanitizePlayerId(String playerId) {
-        if (playerId == null || playerId.trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing playerId.");
+    private static String getAuthenticatedPlayerId(Principal principal) {
+        if (principal == null || principal.getName() == null || principal.getName().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Please log in before saving feedback.");
         }
-        return playerId.trim();
+        return principal.getName();
     }
 
     private static LevelFeedbackSummary toSummary(List<LevelFeedback> rows, String currentPlayerId) {
@@ -137,18 +142,11 @@ public class LevelFeedbackController {
         return new LevelFeedbackSummary(average, ratingCount, playerRating, playerComment, comments);
     }
 
-    public static class FeedbackQuery {
-        public List<String> levelKeys;
-        public String playerId;
-    }
-
     public static class RatingRequest {
-        public String playerId;
         public int rating;
     }
 
     public static class CommentRequest {
-        public String playerId;
         public String comment;
     }
 
