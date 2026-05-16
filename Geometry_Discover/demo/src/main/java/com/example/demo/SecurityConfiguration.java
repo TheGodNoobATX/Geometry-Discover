@@ -30,7 +30,7 @@ public class SecurityConfiguration {
                 .requestMatchers("/api/level-feedback/*/rating").hasAnyRole("ADMIN", "USER")
                 .requestMatchers("/api/level-feedback/*/comment").hasAnyRole("ADMIN", "USER")
 
-                .requestMatchers("/api/level-feedback").permitAll()
+                .requestMatchers("/api/level-feedback").authenticated()
                 .requestMatchers("/api/level-feedback/**").authenticated()
             )
 
