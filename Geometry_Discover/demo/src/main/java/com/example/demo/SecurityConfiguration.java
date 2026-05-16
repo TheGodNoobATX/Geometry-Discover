@@ -25,11 +25,11 @@ public class SecurityConfiguration {
         http
             .userDetailsService(userService)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/home", "/login", "/register", "/search","/profile", "/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/", "/home", "/login", "/register", "/search", "/css/**", "/js/**", "/images/**", "/profile").permitAll()
                 .requestMatchers("/api/level-feedback/*/rating").hasAnyRole("ADMIN", "USER")
                 .requestMatchers("/api/level-feedback/*/comment").hasAnyRole("ADMIN", "USER")
 
-                .requestMatchers("/api/level-feedback").permitAll()
+                .requestMatchers("/api/level-feedback").authenticated()
                 .requestMatchers("/api/level-feedback/**").authenticated()
             )
 
