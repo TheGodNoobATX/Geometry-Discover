@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
     <title>Profile - Geometry Discover</title>
 </head>
 <body>
     <section id="profile-display">
-        <h1><strong><span th:text="${username}"></span></strong></h1>
-        <h3><strong>Levels Rated: </strong> <span th:text="${email}"></span></h3>
-        <h3><strong>5 Star Rates: </strong> <span th:text="${email}"></span></h3>
+        <h1 class="profile-header"><strong><span th:text="${username}"></span></strong></h1>
+        <h3 class="profile-header"><strong>Levels Rated: </strong> <span th:text="${email}"></span></h3>
+        <h3 class="profile-header"><strong>5 Star Rates: </strong> <span th:text="${email}"></span></h3>
     </section>
 </body>
 </html>

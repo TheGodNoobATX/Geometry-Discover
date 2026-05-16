@@ -413,14 +413,16 @@ html::after {
     flex-shrink: 0;
 }
 
-.profile-display {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: rgba(0,0,0,0.6);
+#profile-display {
+    position: relative;
     padding: 10px 15px;
     border-radius: 8px;
-    color: #00ffcc;
+    background: linear-gradient(90deg, #00ffcc, #ff00ff);
     font-family: 'Arial Black', sans-serif;
-    z-index: 10000;
+    z-index: -1;
+}
+
+.profile-header {
+    margin: 0 0 6px 0;
+    text-align: center;
 }
