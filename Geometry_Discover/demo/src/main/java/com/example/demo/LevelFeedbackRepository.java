@@ -11,4 +11,8 @@ public interface LevelFeedbackRepository extends JpaRepository<LevelFeedback, Lo
     List<LevelFeedback> findByLevelKeyIn(List<String> levelKeys);
     List<LevelFeedback> findByLevelKey(String levelKey);
     Optional<LevelFeedback> findByLevelKeyAndPlayerId(String levelKey, String playerId);
+
+    long countByPlayerIdAndRatingIsNotNull(String playerId);
+
+    List<LevelFeedback> findTop3ByPlayerIdAndRatingOrderByUpdatedAtDesc(String playerId, Integer rating);
 }

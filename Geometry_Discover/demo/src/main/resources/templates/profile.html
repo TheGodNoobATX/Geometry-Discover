@@ -7,10 +7,86 @@
     <title>Profile - Geometry Discover</title>
 </head>
 <body>
-    <section id="profile-display">
-        <h1 class="profile-header"><strong><span th:text="${username}"></span></strong></h1>
-        <h3 class="profile-header"><strong>Levels Rated: </strong> <span th:text="${email}"></span></h3>
-        <h3 class="profile-header"><strong>5 Star Rates: </strong> <span th:text="${email}"></span></h3>
-    </section>
+    <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+    <main class="profile-page">
+        <header class="profile-hero">
+            <p class="profile-eyebrow" th:text="${isOwner} ? 'PLAYER PROFILE' : 'VIEWING PROFILE'">PLAYER PROFILE</p>
+            <h1 class="profile-name">
+                <span th:text="${username}">Player</span>
+                <span th:if="${isAdmin}" class="admin-badge admin-badge-lg">ADMIN</span>
+            </h1>
+            <div class="profile-actions">
+                <a th:if="${isOwner}" class="gd-button-purple gd-button-sm" th:href="@{/account}">EDIT ACCOUNT</a>
+                <a class="gd-button-green gd-button-sm" th:href="@{/search}">BROWSE LEVELS</a>
+                <form th:if="${isOwner}" th:action="@{/logout}" method="post" class="profile-logout-form">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="gd-button-orange gd-button-sm">LOG OUT</button>
+                </form>
+            </div>
+        </header>
+
+        <section class="profile-stats">
+            <div class="stat-card">
+                <span class="stat-label">Levels Rated</span>
+                <span class="stat-value" th:text="${ratedCount}">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">5-Star Picks</span>
+                <span class="stat-value" th:text="${#lists.size(topFiveStarLevels)}">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Favorite Level</span>
+                <span class="stat-value stat-value-text"
+                      th:text="${favoriteLevel != null ? favoriteLevel.name() : 'Not set'}">Not set</span>
+            </div>
+        </section>
+
+        <section class="profile-section">
+            <h2 class="profile-section-title">Top 5-Star Levels</h2>
+            <p class="profile-section-sub">Your most recent perfect ratings.</p>
+
+            <div th:if="${#lists.isEmpty(topFiveStarLevels)}" class="profile-empty">
+                <span th:if="${isOwner}">You haven't rated any level 5 stars yet.
+                    <a th:href="@{/search}">Start exploring</a> and drop a rating.</span>
+                <span th:unless="${isOwner}" th:text="${username + ' has not rated any level 5 stars yet.'}">No 5-star ratings yet.</span>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(topFiveStarLevels)}" class="level-grid">
+                <article class="level-card" th:each="level : ${topFiveStarLevels}">
+                    <div class="level-card-image">
+                        <img th:src="@{'/images/' + ${level.image()}}" th:alt="${level.name() + ' preview'}">
+                    </div>
+                    <div class="level-card-body">
+                        <h3 th:text="${level.name()}">Level Name</h3>
+                        <p class="level-card-creator" th:text="'by ' + ${level.creator()}">by Creator</p>
+                        <p class="level-card-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</p>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="profile-section">
+            <h2 class="profile-section-title">Favorite Level</h2>
+            <p class="profile-section-sub">Pinned to your profile. Change it from your account page.</p>
+
+            <div th:if="${favoriteLevel == null}" class="profile-empty">
+                <span th:if="${isOwner}">You haven't picked a favorite yet.
+                    <a th:href="@{/account}">Choose one</a> from your account.</span>
+                <span th:unless="${isOwner}" th:text="${username + ' has not picked a favorite yet.'}">No favorite yet.</span>
+            </div>
+
+            <article th:if="${favoriteLevel != null}" class="level-card level-card-featured">
+                <div class="level-card-image">
+                    <img th:src="@{'/images/' + ${favoriteLevel.image()}}"
+                         th:alt="${favoriteLevel.name() + ' preview'}">
+                </div>
+                <div class="level-card-body">
+                    <span class="favorite-badge">&#9733; FAVORITE</span>
+                    <h3 th:text="${favoriteLevel.name()}">Favorite</h3>
+                    <p class="level-card-creator" th:text="'by ' + ${favoriteLevel.creator()}">by Creator</p>
+                </div>
+            </article>
+        </section>
+    </main>
 </body>
 </html>

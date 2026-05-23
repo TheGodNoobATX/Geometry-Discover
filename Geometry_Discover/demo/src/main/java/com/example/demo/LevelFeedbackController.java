@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import java.security.Principal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -95,6 +96,31 @@ public class LevelFeedbackController {
         return toSummary(levelFeedbackRepository.findByLevelKey(levelKey), playerId);
     }
 
+    @DeleteMapping("/{levelKey}/comment")
+    public LevelFeedbackSummary deleteComment(
+        @PathVariable String levelKey,
+        @RequestParam("playerId") String targetPlayerId,
+        Principal principal
+    ) {
+        String currentPlayerId = getAuthenticatedPlayerId(principal);
+
+        if (targetPlayerId == null || targetPlayerId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "playerId is required.");
+        }
+
+        Optional<LevelFeedback> existing = levelFeedbackRepository.findByLevelKeyAndPlayerId(levelKey, targetPlayerId);
+        if (existing.isPresent()) {
+            LevelFeedback row = existing.get();
+            if (row.getComment() != null && !row.getComment().isBlank()) {
+                row.setComment(null);
+                row.setUpdatedAt(LocalDateTime.now());
+                levelFeedbackRepository.save(row);
+            }
+        }
+
+        return toSummary(levelFeedbackRepository.findByLevelKey(levelKey), currentPlayerId);
+    }
+
     private static String getAuthenticatedPlayerId(Principal principal) {
         if (principal == null || principal.getName() == null || principal.getName().isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Please log in before saving feedback.");
@@ -128,10 +154,12 @@ public class LevelFeedbackController {
                 int commentRating = rowRating != null ? rowRating : 0;
                 comments.add(new CommentDto(
                     isPlayer ? "You" : row.getPlayerId(),
+                    row.getPlayerId(),
                     commentRating,
                     row.getComment(),
                     row.getUpdatedAt(),
-                    isPlayer
+                    isPlayer,
+                    UserService.isAdmin(row.getPlayerId())
                 ));
             }
         }
@@ -150,7 +178,15 @@ public class LevelFeedbackController {
         public String comment;
     }
 
-    public record CommentDto(String author, int rating, String comment, LocalDateTime updatedAt, boolean isPlayer) {}
+    public record CommentDto(
+        String author,
+        String playerId,
+        int rating,
+        String comment,
+        LocalDateTime updatedAt,
+        boolean isPlayer,
+        boolean isAdmin
+    ) {}
 
     public record LevelFeedbackSummary(
         double average,

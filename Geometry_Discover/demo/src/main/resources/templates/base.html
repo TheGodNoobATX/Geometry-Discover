@@ -7,18 +7,20 @@
 </head>
 <body>
 
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
 <div class="menu-container">
 
-    <h1 class="gd-title">GEOMETRY DASH</h1>
-    <h2 class="gd-subtitle">Level Ratings</h2>
+    <h1 class="gd-title">GEOMETRY DISCOVER</h1>
+    <h2 class="gd-subtitle">A place to rate Geometry Dash levels!</h2>
 
     <div class="button-container">
         <a th:href="@{/search}" class="gd-button-green">SEARCH LEVELS</a>
         <a th:href="@{/search(preset='top-rated')}" class="gd-button-blue">TOP RATED</a>
         <a th:href="@{/search(preset='recently-added')}" class="gd-button-pink">RECENTLY ADDED</a>
-        <a th:href="@{/login}" class="gd-button-orange">LOGIN</a>
-        <a th:href="@{/profile}" class="gd-button-purple">PROFILE</a>
-
+        <a th:if="${!isAuthenticated}" th:href="@{/login}" class="gd-button-orange">LOGIN</a>
+        <a th:if="${!isAuthenticated}" th:href="@{/register}" class="gd-button-purple">REGISTER</a>
+        <a th:if="${isAuthenticated}" th:href="@{/profile}" class="gd-button-purple">PROFILE</a>
     </div>
 
 </div>

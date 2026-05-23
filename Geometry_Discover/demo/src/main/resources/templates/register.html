@@ -1,37 +1,45 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Register - Geometry Discover</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
-    <style>
-        .register-container { max-width: 360px; margin: 60px auto; padding: 24px; border: 1px solid #ddd; border-radius:8px; }
-        .register-input { display:block; width:100%; padding:8px; margin:8px 0; box-sizing: border-box; }
-        .register-button { display:inline-block; padding:8px 16px; background:#007bff; color:#fff; border:none; border-radius:4px; cursor:pointer; margin-right: 8px; }
-        .register-button:hover { background:#0056b3; }
-        .message { color:green; padding: 8px; margin-bottom: 12px; }
-        .error { color:red; padding: 8px; margin-bottom: 12px; }
-    </style>
+    <title>Register - Geometry Discover</title>
 </head>
 <body>
+    <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
-<div class="register-container">
-    <h2>Create an Account</h2>
+    <main class="auth-page">
+        <section class="auth-card">
+            <p class="profile-eyebrow">CREATE ACCOUNT</p>
+            <h1 class="auth-title">Join the community!</h1>
+            <p class="auth-subtitle">Rate levels, leave comments, and show other people what you think.</p>
 
-    <div th:if="${error}" class="error" th:text="${error}"></div>
-    <div th:if="${success}" class="message" th:text="${success}"></div>
+            <div th:if="${error}" class="auth-alert auth-alert-error" th:text="${error}"></div>
 
-    <form method="post" th:action="@{/register}">
-        <input class="register-input" type="text" name="username" placeholder="Username" required autofocus />
-        <input class="register-input" type="email" name="email" placeholder="Email" required />
-        <input class="register-input" type="password" name="password" placeholder="Password" required />
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-        <button class="register-button" type="submit">Create Account</button>
-    </form>
+            <form method="post" th:action="@{/register}" class="auth-form">
+                <label class="auth-label" for="reg-username">Username</label>
+                <input id="reg-username" class="auth-input" type="text" name="username"
+                       autocomplete="username" th:value="${formUsername}" required autofocus />
 
-    <p style="margin-top:12px;"><a th:href="@{/login}">Already have an account? Login here</a></p>
-    <p><a th:href="@{/}">Back to home</a></p>
-</div>
+                <label class="auth-label" for="reg-email">Email</label>
+                <input id="reg-email" class="auth-input" type="email" name="email"
+                       autocomplete="email" th:value="${formEmail}" required />
 
+                <label class="auth-label" for="reg-password">Password</label>
+                <input id="reg-password" class="auth-input" type="password" name="password"
+                       autocomplete="new-password" required />
+
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <button class="gd-button-green gd-button-sm auth-submit" type="submit">CREATE ACCOUNT</button>
+            </form>
+
+            <p class="auth-secondary">
+                Already have an account?
+                <a th:href="@{/login}">Sign in</a>
+            </p>
+        </section>
+    </main>
 </body>
 </html>

@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="_csrf" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <meta name="_is_admin" th:content="${isAdmin}">
+    <meta name="_is_authenticated" th:content="${isAuthenticated}">
     <title>Search - Geometry Discover</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
+    <nav th:replace="~{fragments/navbar :: navbar}"></nav>
     <div class="search-page-container">
         <div class="search-controls">
             <input type="text" id="searchInput" placeholder="Search by name or creator...">
@@ -127,6 +130,8 @@
         }
 
         let feedbackByLevel = {};
+        const isAdmin = (document.querySelector('meta[name="_is_admin"]')?.content || '').toLowerCase() === 'true';
+        const isAuthenticated = (document.querySelector('meta[name="_is_authenticated"]')?.content || '').toLowerCase() === 'true';
 
         function getCsrfHeaders() {
             const token = document.querySelector('meta[name="_csrf"]')?.content;
@@ -180,6 +185,26 @@
             });
             if (!response.ok) {
                 alert('Unable to save rating right now. Please try again.');
+                return;
+            }
+            feedbackByLevel[levelKey] = await response.json();
+            applyFilters();
+        }
+
+        async function deleteLevelComment(levelKey, targetPlayerId) {
+            if (!isAdmin) return;
+            const author = targetPlayerId || 'this player';
+            if (!confirm(`Delete the comment by ${author}?`)) return;
+
+            const url = `/api/level-feedback/${encodeURIComponent(levelKey)}/comment`
+                + `?playerId=${encodeURIComponent(targetPlayerId)}`;
+
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: { ...getCsrfHeaders() }
+            });
+            if (!response.ok) {
+                alert('Unable to delete this comment. Please try again.');
                 return;
             }
             feedbackByLevel[levelKey] = await response.json();
@@ -244,35 +269,64 @@
                         <p>Creator: ${level.creator}</p>
                         <p>Difficulty: ${level.difficulty}</p>
                         <div class="level-rating">
-                            <p class="rating-summary">Average: ${rating.average.toFixed(2)} / 5 (${rating.count} ratings)</p>
-                            <p class="rating-summary">Your rating: ${playerRating ? `${playerRating} / 5` : 'Not rated yet'}</p>
-                            <div class="star-rating">
-                                ${[1, 2, 3, 4, 5].map((star) => `
-                                    <button
-                                        type="button"
-                                        class="star-btn ${star <= playerRating ? 'filled player-selected' : ''}"
-                                        data-level-key="${rating.key}"
-                                        data-stars="${star}"
-                                        aria-label="Rate ${level.name} ${star} out of 5 stars"
-                                        title="Rate ${star} star${star > 1 ? 's' : ''}"
-                                    >★</button>
-                                `).join('')}
-                            </div>
-                            <div class="level-comment-composer">
-                                <label for="comment-${rating.key}">Why this rating?</label>
-                                <textarea id="comment-${rating.key}" class="level-comment-input" placeholder="Share what you liked or disliked...">${existingPlayerComment}</textarea>
-                                <button type="button" class="gd-button-blue level-comment-btn" data-level-key="${rating.key}">
-                                    Save Comment
-                                </button>
-                            </div>
+                            <p class="rating-summary">Average: ${rating.count > 0 ? `${rating.average.toFixed(2)} / 5 (${rating.count} rating${rating.count === 1 ? '' : 's'})` : 'No ratings yet'}</p>
+                            ${isAuthenticated ? `
+                                <p class="rating-summary">Your rating: ${playerRating ? `${playerRating} / 5` : 'Not rated yet'}</p>
+                                <div class="star-rating">
+                                    ${[1, 2, 3, 4, 5].map((star) => `
+                                        <button
+                                            type="button"
+                                            class="star-btn ${star <= playerRating ? 'filled player-selected' : ''}"
+                                            data-level-key="${rating.key}"
+                                            data-stars="${star}"
+                                            aria-label="Rate ${level.name} ${star} out of 5 stars"
+                                            title="Rate ${star} star${star > 1 ? 's' : ''}"
+                                        >★</button>
+                                    `).join('')}
+                                </div>
+                                <div class="level-comment-composer">
+                                    <label for="comment-${rating.key}">Why this rating?</label>
+                                    <textarea id="comment-${rating.key}" class="level-comment-input" placeholder="Share what you liked or disliked...">${existingPlayerComment}</textarea>
+                                    <button type="button" class="gd-button-blue level-comment-btn" data-level-key="${rating.key}">
+                                        Save Comment
+                                    </button>
+                                </div>
+                            ` : `
+                                <div class="rating-login-prompt">
+                                    <a href="/login">Log in</a> to rate or comment on this level.
+                                </div>
+                            `}
                             <div class="level-comments-list">
                                 ${commentsForLevel.length
-                                    ? commentsForLevel.map((entry) => `
+                                    ? commentsForLevel.map((entry) => {
+                                        const authorLabel = escapeHtml(entry.author || 'Player');
+                                        const authorHtml = entry.playerId
+                                            ? `<a class="comment-author-link" href="/profile/${encodeURIComponent(entry.playerId)}">${authorLabel}</a>`
+                                            : authorLabel;
+                                        return `
                                         <div class="level-comment-item ${entry.isPlayer ? 'is-player-comment' : ''}">
-                                            <p class="comment-meta">${escapeHtml(entry.author || 'Player')} - ${Number(entry.rating || 0)}/5</p>
+                                            <div class="comment-header">
+                                                <p class="comment-meta">
+                                                    ${authorHtml}
+                                                    ${entry.isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}
+                                                    - ${Number(entry.rating || 0)}/5
+                                                </p>
+                                                ${isAdmin && entry.playerId ? `
+                                                    <button
+                                                        type="button"
+                                                        class="comment-delete-btn"
+                                                        data-level-key="${rating.key}"
+                                                        data-target-player-id="${escapeHtml(entry.playerId)}"
+                                                        title="Delete comment (admin)"
+                                                        aria-label="Delete comment">
+                                                        Delete
+                                                    </button>
+                                                ` : ''}
+                                            </div>
                                             <p class="comment-body">${escapeHtml(entry.comment || '')}</p>
                                         </div>
-                                    `).join('')
+                                    `;
+                                    }).join('')
                                     : '<p class="comment-empty">No comments yet.</p>'
                                 }
                             </div>
@@ -301,6 +355,14 @@
                     const levelKey = button.dataset.levelKey;
                     const input = document.getElementById(`comment-${levelKey}`);
                     submitLevelComment(levelKey, input ? input.value : '');
+                });
+            });
+
+            document.querySelectorAll('.comment-delete-btn').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const levelKey = button.dataset.levelKey;
+                    const targetPlayerId = button.dataset.targetPlayerId;
+                    deleteLevelComment(levelKey, targetPlayerId);
                 });
             });
         }

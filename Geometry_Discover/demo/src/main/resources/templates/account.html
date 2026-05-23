@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <title>Account - Geometry Discover</title>
+</head>
+<body>
+    <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+    <main class="profile-page">
+        <header class="profile-hero">
+            <p class="profile-eyebrow">ACCOUNT SETTINGS</p>
+            <h1 class="profile-name" th:text="${username}">Player</h1>
+            <div class="profile-actions">
+                <a class="gd-button-purple gd-button-sm" th:href="@{/profile}">BACK TO PROFILE</a>
+            </div>
+        </header>
+
+        <section class="profile-section">
+            <h2 class="profile-section-title">Favorite Level</h2>
+            <p class="profile-section-sub">Pick the one level you want pinned to your profile.</p>
+
+            <form th:action="@{/account/favorite}" method="post" class="account-form">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <label class="account-label" for="favoriteLevelKey">Choose your favorite</label>
+                <select id="favoriteLevelKey" name="favoriteLevelKey" class="account-select">
+                    <option value="">— No favorite —</option>
+                    <option th:each="level : ${allLevels}"
+                            th:value="${level.key()}"
+                            th:selected="${level.key()} == ${favoriteLevelKey}"
+                            th:text="${level.name() + ' — ' + level.creator()}">Level</option>
+                </select>
+
+                <div class="account-actions">
+                    <button type="submit" class="gd-button-green gd-button-sm">SAVE FAVORITE</button>
+                    <a class="gd-button-orange gd-button-sm" th:href="@{/profile}">CANCEL</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
